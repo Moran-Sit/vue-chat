@@ -96,6 +96,7 @@ export default {
   },
   computed: {
     authorName() {
+      // console.log('user',this.user)
       return this.user && this.user.name
     },
     chatImageUrl() {
@@ -147,10 +148,6 @@ export default {
   justify-content: center;
 }
 
-.sc-message--content.sent .sc-message--avatar {
-  display: none;
-}
-
 .sc-message--avatar {
   background-repeat: no-repeat;
   background-size: 100%;
@@ -159,7 +156,15 @@ export default {
   min-height: 30px;
   border-radius: 50%;
   align-self: center;
-  margin-right: 15px;
+}
+
+.sc-message--content.sent .sc-message--avatar {
+  order: 2;
+  margin-left: 10px;
+}
+
+.sc-message--content.received .sc-message--avatar {
+  margin-right: 10px;
 }
 
 .sc-message--meta {

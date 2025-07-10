@@ -31,7 +31,6 @@
         role="button"
         tabIndex="0"
         contentEditable="true"
-        :placeholder="placeholder"
         class="sc-user-input--text"
         :style="{color: colors.userInput.text}"
         @focus="setInputActive(true)"
@@ -177,9 +176,11 @@ export default {
       this.file = null
     },
     setInputActive(onoff) {
+      console.log('setInputActive')
       this.inputActive = onoff
     },
     handleKey(event) {
+      console.log(event)
       if (event.keyCode === 13 && !event.shiftKey) {
         if (!this.isEditing) {
           this._submitText(event)
@@ -196,14 +197,18 @@ export default {
       this.$emit('onType')
     },
     focusUserInput() {
+      console.log('focusUserInput')
       this.$nextTick(() => {
-        this.$refs.userInput.focus()
+        setTimeout(() => {
+          this.$refs.userInput.focus()
+        }, 100)
       })
     },
     _submitSuggestion(suggestion) {
       this.onSubmit({author: 'me', type: 'text', data: {text: suggestion}})
     },
     _checkSubmitSuccess(success) {
+      console.log('_checkSubmitSuccess',success)
       if (Promise !== undefined) {
         Promise.resolve(success).then(
           function (wasSuccessful) {
@@ -313,6 +318,11 @@ export default {
   max-height: 200px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.sc-user-input--text:focus {
+  border: 1px solid #409eff; /* 显示边框，模拟 focus 状态 */
+  background-color: #fff;
 }
 
 .sc-user-input--text:empty:before {

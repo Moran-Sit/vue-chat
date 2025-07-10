@@ -1,0 +1,250 @@
+// import Vue from 'vue'
+import axios from 'axios'
+import store from '@/store'
+import { VueAxios } from './axios'
+// import { notification } from 'ant-design-vue'
+// import { ACCESS_TOKEN } from '@/store/mutation-types'
+// import website from '@/config/website';
+// import { Base64 } from 'js-base64';
+import router from '@/router/index'
+import { Message, Notification, Loading } from 'element-ui';
+import { logout } from '@/api/userLogin'
+let loadingNum = 0;
+let loadingInstance = ''
+const baseURL = process.env.VUE_APP_API_BASE_URL;
+// 创建 axios 实例
+const service = axios.create({
+    baseURL: baseURL, // api base_url
+    timeout: 6000 // 请求超时时间
+})
+const addLoadingNum = () => { //增加loading
+    if (loadingNum === 0) {
+        store.commit('user/setLoading', true);
+        loadingInstance = Loading.service({
+            body: true,
+            text: '拼命请求中...',
+            lock: true,
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.3)'
+        });
+    }
+    loadingNum++;
+}
+const reduceLoadingNum = () => { //减少loading
+    if (loadingNum > 0) {
+        loadingNum--
+    }
+    if (loadingNum === 0 && loadingInstance) {
+        store.commit('user/setLoading', false);
+        setTimeout(() => {
+            loadingInstance.close();
+        }, 300)
+
+
+    }
+}
+const err = (error) => {
+    reduceLoadingNum();
+    if (error && error.response) {
+        switch (error.response.status) {
+            case 401:
+                {
+                    // 返回 404 清除token信息并跳转到登录页面
+                    const flag = window.sessionStorage.getItem('flag')
+                    console.log('flag:', flag)
+                    if (flag == 1) {
+                        localStorage.removeItem('userFrom')
+                        logout().then(() => {
+                            router.push('/login')
+                        });
+                        window.sessionStorage.setItem('flag', '0')
+                    }
+                    break
+
+                }
+            case 403:
+                {
+                    // 返回 404 清除token信息并跳转到登录页面
+                    const flag = window.sessionStorage.getItem('flag')
+                    console.log('flag:', flag)
+                    store.dispatch('user/logout').then(() => {
+                        router.push('/login')
+                    });
+                    if (flag == 1) {
+                        window.sessionStorage.setItem('flag', '0')
+                        store.dispatch('app/showLoginRegPopup', {
+                            isShowPopup: true, // 是否显示弹框
+                            popupType: 2, // 1代表首页的登录注册弹框（包括第三方的） 2代表绩效云平台的登录注册弹框
+                            isShowLoginAndReg: 1 // 1代表是登录弹框  2代表注册弹框
+                        })
+                    }
+                    break
+                }
+            case 406:
+                {
+                    // 返回 404 清除token信息并跳转到登录页面
+                    const flag = window.sessionStorage.getItem('flag')
+                    console.log('flag:', flag)
+                    store.dispatch('user/logout').then(() => {
+                        router.push('/login')
+                    });
+                    if (flag != 0) {
+                        window.sessionStorage.setItem('flag', '0')
+                        store.dispatch('app/showLoginRegPopup', {
+                            isShowPopup: true, // 是否显示弹框
+                            popupType: 2, // 1代表首页的登录注册弹框（包括第三方的） 2代表绩效云平台的登录注册弹框
+                            isShowLoginAndReg: 1 // 1代表是登录弹框  2代表注册弹框
+                        })
+                    }
+                    break
+                }
+            case 404:
+                {
+                    Message.error(error.response.data.message || error.response.statusText + '404', 5);
+                    break
+                }
+            case 402:
+                {
+                    Message.error('权限不足', 5000);
+                    break
+                }
+            case 500:
+                {
+                    Message.error(error.response.data.message || error.response.statusText + '500', 5);
+                }
+        }
+    } else {
+        // console.warn(error['message'])
+    }
+    throw new Error(error.response.data)
+}
+service.postFile = function(url, params, config = { headers: { 'content-type': 'application/octet-stream;charset=UTF-8' }, responseType: 'blob' }) {
+    // const urlObj = new FormData();
+    // for (var i in params) {
+    //     urlObj.append(i, params[i])
+    // }
+    return this.post(url, params, config)
+}
+service.getFile = function(url, params = {}, config = { headers: { 'content-type': 'application/octet-stream;charset=UTF-8' }, responseType: 'blob' }) {
+    return this.get(url, config)
+}
+service.postFormUrlencoded = function(url, parsame = {}, config = {}) {
+    var data = '';
+    if (!config.headers) {
+        config.headers = {}
+    }
+    if (config.noLoading) {
+        config.headers.noLoading = config.noLoading
+    }
+    config.headers['content-type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
+    Object.keys(parsame).forEach((key, i) => {
+        let val = '';
+        switch (typeof parsame[key]) {
+            case 'Object':
+                val = JSON.stringify(parsame[key]);
+                break;
+            default:
+                val = parsame[key]
+        }
+        data += `${i===0?'':'&'}${key}=${val}`
+    })
+    return this.post(url, data, config)
+}
+service.getFormUrlencoded = function(url, params = {}, config = {}) {
+    var urlCopy = url;
+    let type = '?'
+    if (!config.headers) {
+        config.headers = {}
+    }
+    if (config.noLoading) {
+        config.headers.noLoading = config.noLoading
+    }
+    config.headers['content-type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+
+    config.params = params
+        // Object.keys(params).forEach((key, i) => {
+        //     let val = params[key]
+        //     urlCopy += `${type}${key}=${val}`
+        //     type = '&'
+        //         // if (typeof val !== 'undefined' && val !== null && val !== '') {
+        //         //     urlCopy += `${type}${key}=${params[key]}`
+        //         //     type = '&'
+        //         // }
+
+    // })
+    return this.get(urlCopy, config)
+}
+service.postFrom = function(url, params, config = {}) {
+    const urlObj = new FormData();
+    if (!config.headers) {
+        config.headers = {}
+    }
+    if (config.noLoading) {
+        config.headers.noLoading = config.noLoading
+    }
+    config.headers['content-type'] = 'multipart/form-data'
+    for (var i in params) {
+        urlObj.append(i, params[i])
+    }
+    return this.post(url, urlObj, config)
+}
+service.getAjax = function(url, parmes = {}, config = {}) {
+  
+        var urlCopy = url;
+        config.parmes = parmes
+        return this.get(urlCopy, config)
+    }
+    // request interceptor
+service.interceptors.request.use(config => {
+    const token = store.state.user.user.tokenName
+    if (!config.notToken && token) {
+        config.headers['WZ-Token'] = token;
+
+    }
+    if (!config.headers.noLoading) {
+        addLoadingNum();
+    }
+    return config
+}, err)
+
+
+
+service.interceptors.response.use((response) => {
+    reduceLoadingNum();
+    if (response.request && response.request.responseType === 'blob') {
+        return response.data
+    }
+    if (response && response.data && parseInt(response.data.status) !== 200) {
+            Notification({
+                title: '操作提示',
+                message: response.data.message,
+                type: 'warning'
+            })
+                // notification.warning({
+                //     message: '操作提示',
+                //     description: response.data.message
+                // })
+            if (parseInt(response.data.status) === 401) {
+                localStorage.removeItem('userFrom')
+                router.push('/user/login')
+            }
+            throw new Error(response.data.message);
+    } else {
+        return response.data
+    }
+
+}, err)
+
+
+
+const installer = {
+    vm: {},
+    install(Vue) {
+        Vue.use(VueAxios, service)
+    }
+}
+
+export {
+    installer as VueAxios,
+    service as axios,
+}

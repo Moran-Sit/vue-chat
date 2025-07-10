@@ -32,6 +32,7 @@
       @onType="$emit('onType')"
       @edit="$emit('edit', $event)"
       @remove="$emit('remove', $event)"
+      @handleUserListToggle="handleUserListToggle"
     >
       <template v-slot:header>
         <slot name="header"> </slot>
@@ -241,8 +242,17 @@ export default {
   },
   methods: {
     openAndFocus() {
+      console.log('openAndFocus')
       this.open()
       this.$root.$emit('focusUserInput')
+    },
+    handleUserListToggle(showUserList){
+      console.log('handleUserListToggle',showUserList)
+      if(!showUserList){
+        this.$nextTick(() => {
+          this.$root.$emit('focusUserInput')
+        })
+      }
     }
   }
 }

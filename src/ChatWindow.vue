@@ -140,9 +140,11 @@ export default {
   methods: {
     handleUserListToggle(showUserList) {
       this.showUserList = showUserList
+      this.$emit('handleUserListToggle', showUserList)
     },
     getSuggestions() {
-      return this.messages.length > 0 ? this.messages[this.messages.length - 1].suggestions : []
+      return [];
+      // return this.messages.length > 0 ? this.messages[this.messages.length - 1].suggestions : []
     }
   }
 }

@@ -2,9 +2,9 @@
   <div class="user-list" :style="{background: userListColor.userList.bg}">
     <table style="padding-top: 5px;">
       <tbody>
-        <tr v-for="user in participants" :key="user.id">
+        <tr v-for="user in participants.filter(p => p.id !== 'me')" :key="user.id">
           <td style="text-align: center;">
-            <img :src="user.imageUrl" class="img-msg" />
+            <img :src="user.imageUrl" class="img-msg" :alt="user.username" />
           </td>
           <td class="user-element" :style="{color: userListColor.userList.text}">
             {{ user.name }}
