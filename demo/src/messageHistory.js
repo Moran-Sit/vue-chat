@@ -108,7 +108,7 @@ export default [
     type: 'text',
     author: `support`,
     id: 21,
-    data: {text: `您好，智能客服为您服务！`},
+    data: {text: `您好，智能小Q为您服务！`},
   },
   {
     type: 'text',

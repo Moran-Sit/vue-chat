@@ -1,8 +1,8 @@
 <template>
   <div :style="{background: backgroundColor}">
-    <div class="logo" style="text-align: center;margin-top: 150px;">
+    <div class="logo" style="text-align: center;margin-top: 140px;">
       <!-- 替代真实 Logo，可换成本地图片或其他图标 -->
-      <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google Logo">
+      <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google Logo" style="height: 100px;">
     </div>
 
     <div class="search-box">
@@ -78,7 +78,7 @@
       :show-typing-indicator="showTypingIndicator"
       :show-edition="true"
       :show-deletion="true"
-      :title="'VIP专属客服'"
+      :title="'智能小Q'"
       :title-image-url="titleImageUrl"
       :disable-user-list-toggle="false"
       @onType="handleOnType"
@@ -134,7 +134,7 @@ export default {
   data() {
     return {
       participants: chatParticipants,
-      titleImageUrl: 'https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png',
+      titleImageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/XiaohongshuLOGO.png',
       messageList: messageHistory,
       newMessagesCount: 0,
       isChatOpen: false,
@@ -192,7 +192,7 @@ export default {
         if (!!window.EventSource) {
           console.log('EventSource')
           const baseURL = process.env.VUE_APP_API_BASE_URL
-          let url = baseURL + '/stream?message=' + text
+          let url = baseURL + '/stream?message=' + encodeURIComponent(text)
           let source = new EventSourcePolyfill(url, {
             headers: {
               'WZ-Token':
@@ -212,8 +212,18 @@ export default {
           // });
           const id = +new Date()
           source.onmessage = (e) => {
-            console.log(e)
+            console.log("=>(App.vue:215)", e);
+            if(!e.data || e.data === 'heartbeat'){
+              return;
+            }
+            //服务端推送完成则关闭EventSource事件源
+            if (e.data === 'complete') {
+              source.close()
+              return;
+            }
+            //如果推送的信息在列表中，则追加信息，否则发送新消息
             let message = this.messageList.find((m) => m.id === id)
+            console.log("=>(App.vue:221)", message);
             if (!message) {
               this.onMessageWasSent({
                 author: 'support',
@@ -225,14 +235,6 @@ export default {
               message.data.text += e.data
             }
             this.showTypingIndicator = ''
-            // let data = eval(e.data);
-            // document.getElementById('d').innerHTML = '';
-            // for (let i = 0; i < data.length; i++) {
-            //服务端推送结束MessageEvent中包含lastEventId则关闭EventSource事件源
-            if (e.lastEventId) {
-              source.close()
-            }
-            // }
           }
           source.onopen = function (e) {
             console.log(e)
@@ -295,7 +297,7 @@ export default {
     },
     like(id) {
       const m = this.messageList.findIndex((m) => m.id === id)
-      var msg = this.messageList[m]
+      const msg = this.messageList[m]
       msg.liked = !msg.liked
       this.$set(this.messageList, m, msg)
     }
@@ -380,14 +382,13 @@ body {
   border-radius: 28px;
   padding: 0 24px;
   box-shadow: 0 1px 6px rgba(32,33,36,.28);
-  margin-left: 450px;
-  margin-top: 20px;
+  margin: 30px auto 0 auto; /* 上 20px，左右自动居中 */
 }
 
 .search-box input {
   flex: 1;
   border: none;
-  font-size: 20px;  /* 更大字体 */
+  font-size: 18px;  /* 更大字体 */
   outline: none;
   height: 100%;
 }

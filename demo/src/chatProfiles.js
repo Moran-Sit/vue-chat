@@ -7,11 +7,11 @@ export default [
   {
     id: 'support',
     name: 'Support',
-    imageUrl: 'https://avatars3.githubusercontent.com/u/37018832?s=200&v=4'
+    imageUrl: 'https://raw.githubusercontent.com/SmartRabbit1230/Images/main/chatbot.jpg'
   },
   {
     id: 'me',
     name: 'Rabbit',
-    imageUrl: 'https://raw.githubusercontent.com/SmartRabbit1230/Images/main/699pic_0pqa1d_xy.jpg'
+    imageUrl: 'https://images.unsplash.com/profile-1752983197668-8da6b77aa4faimage?ixlib=rb-4.1.0&auto=format&fit=crop&q=60&w=32&dpr=2&crop=faces&bg=%23fff&h=32'
   }
 ]

@@ -84,11 +84,19 @@ export default {
       return chatIcon
     }
   },
+  watch: {
+    messages: {
+      handler(newVal, oldVal) {
+        if (this.shouldScrollToBottom()) this.$nextTick(() => this._scrollDown())
+      },
+      deep: true
+    }
+  },
   mounted() {
-    this.$nextTick(this._scrollDown())
+    this.$nextTick(() => this._scrollDown())
   },
   updated() {
-    if (this.shouldScrollToBottom()) this.$nextTick(this._scrollDown())
+    if (this.shouldScrollToBottom()) this.$nextTick(() => this._scrollDown())
   },
   methods: {
     _scrollDown() {

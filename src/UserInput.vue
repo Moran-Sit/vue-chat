@@ -37,6 +37,7 @@
         @blur="setInputActive(false)"
         @keydown="handleKey"
         @focusUserInput="focusUserInput()"
+        @paste="handlePaste"
       ></div>
       <div class="sc-user-input--buttons">
         <div v-if="showEmoji && !isEditing" class="sc-user-input--button">
@@ -195,6 +196,33 @@ export default {
       }
 
       this.$emit('onType')
+    },
+    handlePaste(e) {
+      e.preventDefault(); // 阻止默认粘贴（带样式）
+      const text = (e.clipboardData || window.clipboardData).getData('text'); // 获取纯文本
+
+      // 插入纯文本（现代浏览器写法）
+      //document.execCommand('insertText', false, text);
+
+      // 如果 execCommand 无效，可以用 fallback 方法：
+      this.insertTextAtCursor(text);
+    },
+    insertTextAtCursor(text) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+
+      // 将光标移到文本后面
+      range.setStartAfter(textNode);
+      range.collapse(true);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
     },
     focusUserInput() {
       console.log('focusUserInput')
